@@ -10,6 +10,11 @@
 #include <crypto/hash.h>
 #include <linux/delay.h>
 
+struct sdesc {
+    struct shash_desc shash;
+    char ctx[];
+};
+
 static int crypto_init(void)
 {
 	printk(KERN_ALERT "crypto_init called!\n");
@@ -27,9 +32,11 @@ static int crypto_init(void)
 		printk("Successfully created hashing algorithm!\n");
 	}
 
-	SHASH_DESC_ON_STACK(hashDesc, algoHandle);
-	hashDesc->tfm = algoHandle;
-	hashDesc->flags = 0;
+	int size = sizeof(struct shash_desc) + crypto_shash_descsize(algoHandle);
+
+	struct sdesc *hashDesc = kmalloc(size, GFP_KERNEL);
+	hashDesc->shash.tfm = algoHandle;
+	hashDesc->shash.flags = 0;	
 	
 	unsigned int hashSize = crypto_shash_digestsize(algoHandle);
 	printk("Hash size: %u", hashSize);
@@ -39,7 +46,7 @@ static int crypto_init(void)
 	unsigned bufferSize = strlen(buffer);
 	printk("Buffer size: %u", bufferSize);
 	
-	if (crypto_shash_digest(hashDesc, buffer, strlen(buffer), hash) == 0) {
+	if (crypto_shash_digest(&hashDesc->shash, buffer, strlen(buffer), hash) == 0) {
 		printk("Successfully hashed %s:", buffer);
 
 		print_hex_dump(KERN_ALERT, "", DUMP_PREFIX_NONE, 16, 1, hash, hashSize, 1);
