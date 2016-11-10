@@ -38,13 +38,9 @@ static int crypto_init(void)
 
 	unsigned bufferSize = strlen(buffer);
 	printk("Buffer size: %u", bufferSize);
-	msleep(100);
 	
-	return 0;
-
 	if (crypto_shash_digest(hashDesc, buffer, strlen(buffer), hash) == 0) {
 		printk("Successfully hashed %s:", buffer);
-		return 0;
 
 		print_hex_dump(KERN_ALERT, "", DUMP_PREFIX_NONE, 16, 1, hash, hashSize, 1);
 	} else {
