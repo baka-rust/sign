@@ -54,6 +54,8 @@ static int crypto_init(void)
 		printk("Hashing failed!");
 	}
 
+	kfree(hashDesc);
+
 	return 0;
 }
 
