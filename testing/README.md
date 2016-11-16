@@ -9,6 +9,7 @@ Some definitions that will be useful for reading this document:
 	     hash function      signing algorithm
 	data ------------> hash ----------------> signature
 
+
 * Certificate: A certificate is the combination of a subject's public key and identifying information (e.g. name). The certificate is usually issued by a certificate authority, which signs the certificate using its own private key. A certificate is used to verify a digital signature.
 
 
