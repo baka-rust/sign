@@ -16,6 +16,8 @@ data ------------> hash ----------------> signature
 
 Instead of inventing our own signature algorithm and certificate format, we are going to tack a CMS signature onto the end of a binary and verify it upon binary load. Why? It turns out that the kernel already supports loading SIGNED MODULES (yay!). Signed modules have a CMS signature tacked onto the end of them, which the kernel verifies upon module load. The kernel also validates that the certificate used for verification has been signed by a trusted authority. The kernel maintains a list of trusted public keys that it uses for trust validation. This is all explained [here](https://www.kernel.org/doc/Documentation/module-signing.txt). Also, see system_keyring.c in the certs/ folder.
 
+Basically, all of the code signing logic is already implemented. Signed modules is a kernel configuration option that is not enabled by default. When building our version of the kernel, it must be enabled, as our feature builds on top of it.
+
 
 # What is X.509? #
 
