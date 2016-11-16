@@ -7,6 +7,7 @@ Some definitions that will be useful for reading this document:
 * Signature algorithm: A combination of a hashing algorithm (such as SHA) and a signing algorithm (such as RSA) for generating a digital signature. A signature algorithm performs the following transformation:
 
 	     hash function      signing algorithm
+
 	data ------------> hash ----------------> signature
 
 
