@@ -6,8 +6,8 @@ Some definitions that will be useful for reading this document:
 
 * Signature algorithm: A combination of a hashing algorithm (such as SHA) and a signing algorithm (such as RSA) for generating a digital signature. A signature algorithm performs the following transformation:
 
-     hash function      signing algorithm
-data ------------> hash ----------------> signature
+`     hash function      signing algorithm
+data ------------> hash ----------------> signature `
 
 * Certificate: A certificate is the combination of a subject's public key and identifying information (e.g. name). The certificate is usually issued by a certificate authority, which signs the certificate using its own private key. A certificate is used to verify a digital signature.
 
