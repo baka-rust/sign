@@ -313,7 +313,7 @@ static int crypto_init(void)
 
 	/* PKCS#7 */
 	
-	const char *unsignedData = "Hello, world!";
+	const char *unsignedData = "Hello, world!\n";
 
 	struct pkcs7_message *sig = pkcs7_parse_message(testsignature, testsignature_len);
 	
