@@ -12,6 +12,7 @@
 #include <linux/scatterlist.h>
 #include <crypto/akcipher.h>
 #include <crypto/pkcs7.h>
+#include <keys/system_keyring.h>
 
 struct sdesc {
     struct shash_desc shash;
@@ -257,7 +258,7 @@ static int crypto_init(void)
 	
 	const char *unsignedData = "Hello, world!\n";
 
-	struct pkcs7_message *sig = pkcs7_parse_message(testsignature, testsignature_len);
+	/*struct pkcs7_message *sig = pkcs7_parse_message(testsignature, testsignature_len);
 	
 	if (IS_ERR(sig)) {
 		printk("Error parsing PKCS#7 signature: %d\n", PTR_ERR(sig));
@@ -272,9 +273,15 @@ static int crypto_init(void)
 	int verifyResult;
 	if ((verifyResult = pkcs7_verify(sig, VERIFYING_UNSPECIFIED_SIGNATURE)) != 0) {
 		printk("Error verifying signature: %d\n", verifyResult);
-	}
+	}*/
 
-	
+	int result;
+
+	if ((result = system_verify_data(unsignedData, strlen(unsignedData), testsignature, testsignature_len, VERIFYING_UNSPECIFIED_SIGNATURE)) != 0) {
+		printk("Error verifying and validating signature: %d\n", result);
+	} else {
+		printk("Signature verified!\n");	
+	}
 
 	return 0;		
 
