@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-rsync -r /lib ~/lib_backup
-rsync -r /boot ~/boot_backup
+rsync -a /lib ~/lib_backup
+rsync -a /boot ~/boot_backup
 
 cd lib
 
