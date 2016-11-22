@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+cp -rf /lib ~/lib_backup
+cp -rf /boot ~/boot_backup
+
 cd lib
 
 sudo cp -rd * /lib/
