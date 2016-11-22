@@ -1,0 +1,7 @@
+cd /home/warehouse/ejvaughan/linux
+
+get -r modules/lib/
+get -r arch/arm/boot/
+get scripts/mkknlimg
+
+quit
