@@ -1,0 +1,100 @@
+\documentclass[12pt, letterpaper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+
+
+\title{CSE522 Final Project Proposal - Kernel Space Executable Code Signing}
+\author{Sam Frank, Ethan Vaughan, Erik Wijmans}
+\date{November 2016}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Project Goals}
+	Our goal was to modify the 4.4 Linux kernel to provide combined certificate athority and developer code signing verification and validation on binary execution. 
+	Specifically, we wished to modify the \texttt{exec} family of system calls to prevent execution of any unsigned or invalid \texttt{ELF} files.
+
+\section{Terminology}
+	\begin{enumerate}
+		\item \textbf{Signing} - We say a piece of data is "signed" when it is encrypted using a private key. Encryption using a public key is just called encryption.
+		\item \textbf{Signature Algorithm} - A combination of a hashing algorithm (such as SHA) and a signing algorithm (such as RSA) for generating a digital signature. A signature algorithm performs the following transformation: \\
+		\texttt{Data -[Hash Function]-> Hash -[Signing Algorithm]-> Signature}
+		\item \textbf{Certificate} - A certificate is the combination of a subject's public key and identifying information (e.g. name). The certificate is usually issued by a certificate authority, which signs the certificate using its own private key. A certificate is used to verify a digital signature.
+	\end{enumerate}
+
+\section{Approach Details}
+
+	Our initial approach outlined in our project proposal included a custom certificate format using RSA and SHA-3, an extension to \texttt{ELF},
+	and potential custom kernel implementations of the required cryptographic methods. \\
+	
+	After some additional research, we discovered an extensive, easy to leverage cryptographic ecosystem already existent in kernel space. This ecosystem includes support for signed modules, using \texttt{X.509} certificates and \texttt{PKCS \#7} (RFC 2315) signatures. We decided to leverage and extend this feature set to include signed binaries. 
+
+	\subsection{Changes in Approach}
+		\begin{enumerate}
+			\item \textbf{Certificate Format} \\
+			
+			The existing module certificate uses \texttt{X.509} and \texttt{PKCS \#7}. \\
+			
+			\texttt{X.509} is is standard for digital certificates to issued by certificate authorities (CA). It contains the subject's public key and identifying information, which is signed by the CA. \\
+			
+			\texttt{PKCS \#7} is a standard for encrypting/signing messages using a certificate from a CA (e.g. an X.509 certificate). \texttt{PKCS \#7}, in our case, is used to sign our binaries, using the developer's \texttt{X.509} certificate and their private key. \\
+			
+			\item \textbf{Kernel Crypto APIs for Signature Verification} \\
+			
+			The kernel crypto API includes several easy to leverage function for signature verification. Most notably, the \texttt{whatever\_it\_is()} function provides .... (etc)
+			
+			\item \textbf{Method of Certificate Attachment} \\
+			
+				Originally, we planned on extending \texttt{ELF} via custom attributes. The kernel signed module system, however, simply tacks the module's certificate to the end of the binary, without modifying anything about the file itself. It includes a simple magic string (\texttt{"~signature"}) and the very end of the file, and because the size of the certificate is known, it is trivial for the validation framework to isolate it from the rest of the binary. 
+		\end{enumerate}
+
+	\subsection{Final Implementation Details}
+	Our final implementation flow is as follows:\\ 
+	
+	\textbf{Binary Signing}
+	\begin{enumerate}
+		\item{The developer generates a public/private key pair, and submits a request to a Certificate Authority}
+		\item{The CA generates a X.509 certificate for the developer, using their master X.509 certificate}
+		\item{The developer uses their new certificate to generate a PKCS \#7 signature of their binary via our user space tool, which attaches the signature to the target ELF file, along with a magic string}
+	\end{enumerate}
+	
+	\textbf{Binary Execution}
+	\begin{enumerate}
+		\item{The user updates their kernel \texttt{keyring} to include the certificate authority's master X.509 certificate (also called the "root" certificate)}
+		\item{The user attempts to execute a signed ELF binary via the \texttt{exec} family of system calls, triggering signature verification}
+		\item{Our modified \texttt{exec} checks for the existence of a cached binary hash in the file's \texttt{xattrs} }
+			\begin{enumerate}
+				\item{if the binary hash is cashed, load the hash into memory and skip to ...}
+			\end{enumerate}
+		\item{a}
+	\end{enumerate}
+
+\section{Technical Challenges \& Solutions}
+
+	\subsection{Modification of \texttt{exec}}
+
+	\subsection{Loading Entire Binary Into Memory}
+
+	\subsection{Cashing Binary Hashes}
+		Due to the large overhead (discussed further in the Evaluation section) of hashing an entire binary on execution, we decided to store pre-computed hashes of all \texttt{ELF} files after their initial execution, along with a timestamp to validate the cached hash. \\
+		
+		Initially, we planned to modify the \texttt{inode} structure to include new fields, however we quickly discovered that any changes would need to be implemented within the filesystem itself. In order to avoid trying to drain the ocean, we decided instead to leverage \texttt{xattrs} - extended attributes within the file system that can be walled off entirely from user space.
+	
+\section{Evaluation}
+	\subsection{Approach}
+	\subsection{Results}
+
+\section{Extensions}
+	Due to the scope of this project, there were several features and extensions we were not able to tackle in the allotted time. 
+
+	\subsection{Certificate Revocation}
+		The \texttt{X.509} specification includes a section on certificate revocation (RFC 5280 3.3). A revocation must occur when a developer's private key is compromised, or if the developer is otherwise no longer trusted. The specification defines a CA signed data structure of revoked certificates for this purpose. It is intended to be periodically updated and published by the CA on some central repository. \\
+		
+One extension of this project would be to implement revocation functionality on top of our binary signing. This would likely include some user-space program to do periodic fetches of trusted CA revoke lists, and kernel space functionality to update a global revoked certificate data structure (likely a system call). 
+
+\end{document}
+ 
