@@ -31,7 +31,7 @@
 	Our initial approach outlined in our project proposal included a custom certificate format using RSA and SHA-3, an extension to \texttt{ELF},
 	and potential custom kernel implementations of the required cryptographic methods. \\
 	
-	After some additional research, we discovered an extensive, easy to leverage cryptographic ecosystem already existent in kernel space. This ecosystem includes support for signed modules, using \texttt{X.509} certificates and \texttt{PKCS \#7} (RFC 2315) signatures. We decided to leverage and extend this feature set to include signed binaries. 
+	After some additional research, we discovered an extensive, easy to leverage cryptographic ecosystem already existent in kernel space. This ecosystem includes support for signed modules, using \texttt{X.509} (IETF RFC 5280) certificates and \texttt{PKCS \#7} (IETF RFC 2315) signatures. We decided to leverage and extend this feature set to include signed binaries. 
 
 	\subsection{Changes in Approach}
 		\begin{enumerate}
@@ -49,7 +49,7 @@
 			
 			\item \textbf{Method of Certificate Attachment} \\
 			
-				Originally, we planned on extending \texttt{ELF} via custom attributes. The kernel signed module system, however, simply tacks the module's certificate to the end of the binary, without modifying anything about the file itself. It includes a simple magic string (\texttt{"~signature"}) and the very end of the file, and because the size of the certificate is known, it is trivial for the validation framework to isolate it from the rest of the binary. 
+				Originally, we planned on extending \texttt{ELF} via custom attributes. The kernel signed module system, however, simply tacks the module's certificate to the end of the binary, without modifying anything about the file itself. It includes a simple magic string (\texttt{"$\sim$signature"}) and the very end of the file, and because the size of the certificate is known, it is trivial for the validation framework to isolate it from the rest of the binary. 
 		\end{enumerate}
 
 	\subsection{Final Implementation Details}
@@ -66,11 +66,17 @@
 	\begin{enumerate}
 		\item{The user updates their kernel \texttt{keyring} to include the certificate authority's master X.509 certificate (also called the "root" certificate)}
 		\item{The user attempts to execute a signed ELF binary via the \texttt{exec} family of system calls, triggering signature verification}
+		\item{Our modified \texttt{exec} checks for the magic string "$\sim$signature" at the end of the binary, and if it exists isolates the attached certificate}
 		\item{Our modified \texttt{exec} checks for the existence of a cached binary hash in the file's \texttt{xattrs} }
 			\begin{enumerate}
-				\item{if the binary hash is cashed, load the hash into memory and skip to ...}
+				\item{if the binary hash is \textbf{not} cached, we load the entire file into memory and hash it via the kernel crypto library}
+				\item{if the binary hash is cashed, we just load the hash into memory}
 			\end{enumerate}
-		\item{a}
+		\item{\texttt{exec} runs the certificate through validation}
+		\item{\texttt{exec} compares the two hashes, and if they match, allows execution to continue}
+			\begin{enumerate}
+				\item{if the hash was not previously stored in the file's \texttt{xattrs}, \texttt{exec} updates them to include it prior to execution}
+			\end{enumerate}
 	\end{enumerate}
 
 \section{Technical Challenges \& Solutions}
