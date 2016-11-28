@@ -1,4 +1,4 @@
-A modification to the 4.4 Linux kernal, as well as an extension to
+A modification to the 4.4 Linux kernel, as well as an extension to
 the Executable and Linkable Format (ELF), to provide code signing
 verification and validation on binary execution.
 
