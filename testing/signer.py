@@ -8,7 +8,7 @@ import subprocess, shlex
 from sys import argv
 
 if len(argv) != 4:
-  print("./signer.py <path_to_binary> <path_to_cert> <path_to_private_key>")
+  print("Usage: ./signer.py <path_to_binary> <path_to_cert> <path_to_private_key>")
   raise RuntimeError("Wrong number of arguments")
 
 binary_name = argv[1]
@@ -26,4 +26,4 @@ if num_bytes == 0:
 with open(binary_name, "ab") as f:
   f.write(signature)
   f.write(num_bytes.to_bytes(4, byteorder='little'))
-  f.write("~~BINARY SIGNATURE~~".encode("utf-8"))
+  f.write("~~ BINARY SIGNATURE ~~".encode("utf-8"))
