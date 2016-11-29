@@ -16,12 +16,16 @@ cert_name = argv[2]
 private_key_name = argv[3]
 
 command = "openssl cms -sign -signer {} -inkey {} -binary -in {} -outform der -noattr".format(cert_name, private_key_name, binary_name)
-signature = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE).communicate()[0]
+
+child =  subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+child.wait()
+
+if child.returncode != 0:
+  raise RuntimeError("Signer failed")
+
+signature = child.communicate()[0]
 
 num_bytes = len(signature)
-
-if num_bytes == 0:
-  raise RuntimeError("Signing failed")
 
 with open(binary_name, "ab") as f:
   f.write(signature)
