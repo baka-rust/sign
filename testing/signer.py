@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 '''
-  Usage: ./signer.py <path_to_binary> <path_to_cert> <path_to_private_key>
+  Usage: ./signer.py <path_to_binary> <path_to_cert> <path_to_private_key> <private key password>
+	If <password> is not supplied, it will be prompted for
 '''
 
 import subprocess, shlex
@@ -15,9 +16,12 @@ binary_name = argv[1]
 cert_name = argv[2]
 private_key_name = argv[3]
 
-command = "openssl cms -sign -signer {} -inkey {} -binary -in {} -outform der -noattr".format(cert_name, private_key_name, binary_name)
+if len(argv) == 5:
+  command = "openssl cms -sign -signer {} -inkey {} -binary -in {} -outform der -noattr -passin pass:{}".format(cert_name, private_key_name, binary_name, argv[4])
+else:
+  command = "openssl cms -sign -signer {} -inkey {} -binary -in {} -outform der -noattr".format(cert_name, private_key_name, binary_name)
 
-child =  subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+child =  subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 child.wait()
 
 if child.returncode != 0:
